@@ -1,42 +1,20 @@
-import { Coin, masterPublicKeyToFirstPuzzleHash, Tls, Peer, puzzleHashToAddress, secretKeyToPublicKey } from "datalayer-driver";
-import path from "path";
-import os from 'os';
+import { addressToPuzzleHash, puzzleHashToAddress } from "datalayer-driver";
+import { formatCoin, formatSuccessResponse } from "./format";
+import { getPeer, getPublicSyntheticKey, getServerPuzzleHash, MIN_HEIGHT, NETWORK_PREFIX } from "./utils";
+import express, { Request, Response } from 'express';
+import bodyParser from "body-parser";
 
-const express = require('express');
-const bodyParser = require('body-parser');
 const app = express();
 const port = 3030;
 
 app.use(bodyParser.json());
 
-const NETWORK_PREFIX = process.env.NETWORK_PREFIX || 'txch';
-const CHIA_CRT = process.env.CHIA_CRT || path.join(os.homedir(), '.chia-testnet11/mainnet/config/ssl/wallet/wallet_node.crt');
-const CHIA_KEY = process.env.CHIA_KEY || path.join(os.homedir(), '.chia-testnet11/mainnet/config/ssl/wallet/wallet_node.key');
-
-let peer: Peer | null = null;
-export const getPeer = async (): Promise<Peer> => {
-  if (!peer) {
-    const tls = new Tls(CHIA_CRT, CHIA_KEY);
-    peer = await Peer.new('127.0.0.1:58444', 'testnet11', tls);
-  }
-
-  return peer!;
-};
-
-const formatCoin = (coin: Coin) => ({
-  parentCoinInfo: coin.parentCoinInfo.toString('hex'),
-  puzzleHash: coin.puzzleHash.toString('hex'),
-  amount: parseInt(coin.amount.toString()),
-});
-
 app.get('/info', async (req: Request, res: any) => {
-  const master_sk = Buffer.from(process.env.SERVER_SK as string, 'hex');
-  const master_pk = secretKeyToPublicKey(master_sk);
-  const ph = masterPublicKeyToFirstPuzzleHash(master_pk);
+  const ph = getServerPuzzleHash();
   const address = puzzleHashToAddress(ph, NETWORK_PREFIX);
 
   const peer = await getPeer();
-  const coins = await peer.getCoins(ph, 1016697);
+  const coins = await peer.getCoins(ph, MIN_HEIGHT);
 
   res.json({
     address,
@@ -44,35 +22,37 @@ app.get('/info', async (req: Request, res: any) => {
   })
 });
 
-// app.post('/mint', async (req, res) => {
-//   const { root_hash, label, description, ownerAddress, fee, oracle_fee } = req.body;
+app.post('/mint', async (req: Request, res: Response) => {
+  const { root_hash, label, description, owner_address, fee, oracle_fee } : {
+    root_hash: string,
+    label: string,
+    description: string,
+    owner_address: string,
+    fee: number,
+    oracle_fee: number,
+  } = req.body;
 
-//   try {
-//     const tls = new Tls('path_to_cert', 'path_to_key'); // Update paths as necessary
-//     const peer = await Peer.new('nodeUri', 'networkId', tls);
+  const rootHash = Buffer.from(root_hash, 'hex');
+  const ownerPuzzleHash = addressToPuzzleHash(owner_address);
+  const feeBigInt = BigInt(fee);
+  const oracleFeeBigInt = BigInt(oracle_fee);
 
-//     const rootHashBuffer = Buffer.from(root_hash, 'hex');
-//     const ownerPuzzleHashBuffer = Buffer.from(ownerAddress, 'hex');
-//     const feeBigInt = BigInt(fee);
-//     const oracleFeeBigInt = BigInt(oracle_fee);
+  const serverPh = getServerPuzzleHash();
 
-//     const successResponse = await peer.mintStore(
-//       Buffer.from('minterSyntheticKey', 'hex'), // Replace with actual key
-//       0, // minterPhMinHeight, update as necessary
-//       rootHashBuffer,
-//       label,
-//       description,
-//       ownerPuzzleHashBuffer,
-//       [], // delegatedPuzzles, update as necessary
-//       feeBigInt
-//     );
+  const peer = await getPeer();
+  const successResponse = await peer.mintStore(
+    getPublicSyntheticKey(),
+    MIN_HEIGHT,
+    rootHash,
+    label,
+    description,
+    ownerPuzzleHash,
+    [],
+    feeBigInt
+  );
 
-//     res.json(successResponse);
-//   } catch (error) {
-//     console.error('Error minting store:', error);
-//     res.status(500).json({ error: 'Failed to mint store' });
-//   }
-// });
+  res.json(formatSuccessResponse(successResponse));
+});
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
