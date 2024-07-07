@@ -6,6 +6,7 @@ export const NETWORK_PREFIX = process.env.NETWORK_PREFIX || 'txch';
 export const CHIA_CRT = process.env.CHIA_CRT || path.join(os.homedir(), '.chia-testnet11/mainnet/config/ssl/wallet/wallet_node.crt');
 export const CHIA_KEY = process.env.CHIA_KEY || path.join(os.homedir(), '.chia-testnet11/mainnet/config/ssl/wallet/wallet_node.key');
 export const MIN_HEIGHT = parseInt(process.env.MIN_HEIGHT || '1016697');
+export const NETWORK_AGG_SIG_DATA = Buffer.from(process.env.NETWORK_AGG_SIG_DATA || '37a90eb5185a9c4439a91ddc98bbadce7b4feba060d50116a067de66bf236615', 'hex');
 
 // todo: persist peer; wallet logic
 export const getPeer = async (): Promise<Peer> => {

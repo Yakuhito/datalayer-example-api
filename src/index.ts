@@ -1,12 +1,15 @@
-import { addressToPuzzleHash, adminDelegatedPuzzleFromKey, oracleDelegatedPuzzle, puzzleHashToAddress, writerDelegatedPuzzleFromKey } from "datalayer-driver";
+import { addressToPuzzleHash, adminDelegatedPuzzleFromKey, oracleDelegatedPuzzle, puzzleHashToAddress, signCoinSpends, SpendBundle, writerDelegatedPuzzleFromKey } from "datalayer-driver";
 import { formatCoin, formatSuccessResponse } from "./format";
-import { getPeer, getPublicSyntheticKey, getServerPuzzleHash, MIN_HEIGHT, NETWORK_PREFIX } from "./utils";
+import { getPeer, getPrivateSyntheticKey, getPublicSyntheticKey, getServerPuzzleHash, MIN_HEIGHT, NETWORK_AGG_SIG_DATA, NETWORK_PREFIX } from "./utils";
 import express, { Request, Response } from 'express';
 import bodyParser from "body-parser";
+import cors from 'cors';
+import { parseCoinSpends } from "./parse";
 
 const app = express();
 const port = 3030;
 
+app.use(cors());
 app.use(bodyParser.json());
 
 app.get('/info', async (req: Request, res: any) => {
@@ -57,6 +60,27 @@ app.post('/mint', async (req: Request, res: Response) => {
   );
 
   res.json(formatSuccessResponse(successResponse));
+});
+
+app.post('/sing_and_send', async (req: Request, res: Response) => {
+  const { coin_spends } : {
+    coin_spends: any[],
+  } = req.body;
+  const coinSpends = parseCoinSpends(coin_spends);
+
+  const sig = signCoinSpends(coinSpends, [getPrivateSyntheticKey()], NETWORK_AGG_SIG_DATA);
+
+  const spend_bundle: SpendBundle = {
+    coinSpends: coinSpends,
+    aggregatedSignature: sig,
+  };
+
+  const peer = await getPeer();
+  const err = await peer.broadcastSpendBundle(spend_bundle);
+
+  console.log({ err})
+
+  res.json({ err });
 });
 
 app.listen(port, () => {
