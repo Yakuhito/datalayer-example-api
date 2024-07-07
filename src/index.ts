@@ -5,19 +5,19 @@ import os from 'os';
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
-const port = 3000;
+const port = 3030;
 
 app.use(bodyParser.json());
 
 const NETWORK_PREFIX = process.env.NETWORK_PREFIX || 'txch';
-const CHIA_CRT = process.env.CHIA_CRT || path.join(os.homedir(), '.chia-testnet11/mainnet/config/ssl/full_node/public_full_node.crt');
-const CHIA_KEY = process.env.CHIA_KEY || path.join(os.homedir(), '/.chia-testnet11/mainnet/config/ssl/full_node/public_full_node.key');
+const CHIA_CRT = process.env.CHIA_CRT || path.join(os.homedir(), '.chia-testnet11/mainnet/config/ssl/wallet/wallet_node.crt');
+const CHIA_KEY = process.env.CHIA_KEY || path.join(os.homedir(), '.chia-testnet11/mainnet/config/ssl/wallet/wallet_node.key');
 
 let peer: Peer | null = null;
 export const getPeer = async (): Promise<Peer> => {
   if (!peer) {
     const tls = new Tls(CHIA_CRT, CHIA_KEY);
-    peer = await Peer.new('127.0.0.1:58444', 'mainnet', tls);
+    peer = await Peer.new('127.0.0.1:58444', 'testnet11', tls);
   }
 
   return peer!;
@@ -26,7 +26,7 @@ export const getPeer = async (): Promise<Peer> => {
 const formatCoin = (coin: Coin) => ({
   parentCoinInfo: coin.parentCoinInfo.toString('hex'),
   puzzleHash: coin.puzzleHash.toString('hex'),
-  amount: coin.amount,
+  amount: parseInt(coin.amount.toString()),
 });
 
 app.get('/info', async (req: Request, res: any) => {
