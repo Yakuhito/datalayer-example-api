@@ -1,4 +1,4 @@
-import { addressToPuzzleHash, puzzleHashToAddress } from "datalayer-driver";
+import { addressToPuzzleHash, adminDelegatedPuzzleFromKey, oracleDelegatedPuzzle, puzzleHashToAddress, writerDelegatedPuzzleFromKey } from "datalayer-driver";
 import { formatCoin, formatSuccessResponse } from "./format";
 import { getPeer, getPublicSyntheticKey, getServerPuzzleHash, MIN_HEIGHT, NETWORK_PREFIX } from "./utils";
 import express, { Request, Response } from 'express';
@@ -38,6 +38,7 @@ app.post('/mint', async (req: Request, res: Response) => {
   const oracleFeeBigInt = BigInt(oracle_fee);
 
   const serverPh = getServerPuzzleHash();
+  const serverKey = getPublicSyntheticKey();
 
   const peer = await getPeer();
   const successResponse = await peer.mintStore(
@@ -47,7 +48,11 @@ app.post('/mint', async (req: Request, res: Response) => {
     label,
     description,
     ownerPuzzleHash,
-    [],
+    [
+      adminDelegatedPuzzleFromKey(serverKey),
+      writerDelegatedPuzzleFromKey(serverKey),
+      oracleDelegatedPuzzle(serverPh, oracleFeeBigInt)
+    ],
     feeBigInt
   );
 
