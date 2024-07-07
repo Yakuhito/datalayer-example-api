@@ -1,14 +1,27 @@
-import { Coin, masterPublicKeyToFirstPuzzleHash, puzzleHashToAddress, secretKeyToPublicKey } from "datalayer-driver";
+import { Coin, masterPublicKeyToFirstPuzzleHash, Tls, Peer, puzzleHashToAddress, secretKeyToPublicKey } from "datalayer-driver";
+import path from "path";
+import os from 'os';
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const { Peer, Tls } = require('datalayer-driver');
 const app = express();
 const port = 3000;
 
-const NETWORK_PREFIX = process.env.NETWORK_PREFIX || 'txch';
-
 app.use(bodyParser.json());
+
+const NETWORK_PREFIX = process.env.NETWORK_PREFIX || 'txch';
+const CHIA_CRT = process.env.CHIA_CRT || path.join(os.homedir(), '.chia-testnet11/mainnet/config/ssl/full_node/public_full_node.crt');
+const CHIA_KEY = process.env.CHIA_KEY || path.join(os.homedir(), '/.chia-testnet11/mainnet/config/ssl/full_node/public_full_node.key');
+
+let peer: Peer | null = null;
+export const getPeer = async (): Promise<Peer> => {
+  if (!peer) {
+    const tls = new Tls(CHIA_CRT, CHIA_KEY);
+    peer = await Peer.new('127.0.0.1:58444', 'mainnet', tls);
+  }
+
+  return peer!;
+};
 
 const formatCoin = (coin: Coin) => ({
   parentCoinInfo: coin.parentCoinInfo.toString('hex'),
@@ -16,15 +29,18 @@ const formatCoin = (coin: Coin) => ({
   amount: coin.amount,
 });
 
-app.get('/info', (req: Request, res: any) => {
+app.get('/info', async (req: Request, res: any) => {
   const master_sk = Buffer.from(process.env.SERVER_SK as string, 'hex');
   const master_pk = secretKeyToPublicKey(master_sk);
-  console.log('master_pk: ', master_pk.toString('hex'));
   const ph = masterPublicKeyToFirstPuzzleHash(master_pk);
   const address = puzzleHashToAddress(ph, NETWORK_PREFIX);
 
+  const peer = await getPeer();
+  const coins = await peer.getCoins(ph, 1016697);
+
   res.json({
-    address
+    address,
+    coins: coins.map(formatCoin),
   })
 });
 
