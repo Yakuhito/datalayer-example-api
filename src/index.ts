@@ -21,6 +21,7 @@ app.get('/info', async (req: Request, res: any) => {
 
   res.json({
     address,
+    pk: getPublicSyntheticKey().toString('hex'),
     coins: coins.map(formatCoin),
   })
 });
@@ -164,6 +165,24 @@ app.post('/melt', async (req: Request, res: Response) => {
   );
 
   res.json({ coin_spends: resp.map(formatCoinSpend) });
+});
+
+
+app.post('/oracle', async (req: Request, res: Response) => {
+  let { info, fee } : {
+    info: any,
+    fee: number,
+  } = req.body;
+
+  const peer = await getPeer();
+  const resp = await peer.oracleSpend(
+    getPublicSyntheticKey(),
+    MIN_HEIGHT,
+    info,
+    BigInt(fee)
+  )
+
+  res.json(formatSuccessResponse(resp));
 });
 
 app.post('/add-fee', async (req: Request, res: Response) => {
