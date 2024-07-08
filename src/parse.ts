@@ -30,8 +30,8 @@ export function parseProof(proof: any): Proof {
   } else {
     return {
       eveProof: {
-        parentCoinInfo: Buffer.from(proof.eve_proof.parent_coin_info, 'hex'),
-        amount: BigInt(proof.eve_proof.amount),
+        parentCoinInfo: Buffer.from(proof.parent_coin_info, 'hex'),
+        amount: BigInt(proof.amount),
       }
     }
   }
@@ -49,10 +49,10 @@ export function parseDelegatedPuzzle(delegatedPuzzle: any): DelegatedPuzzle {
   return {
     puzzleHash: Buffer.from(delegatedPuzzle.puzzle_hash, 'hex'),
     puzzleInfo: {
-      adminInnerPuzzleHash: Buffer.from(delegatedPuzzle.puzzle_info.admin_inner_puzzle_hash, 'hex'),
-      writerInnerPuzzleHash: Buffer.from(delegatedPuzzle.puzzle_info.writer_inner_puzzle_hash, 'hex'),
-      oraclePaymentPuzzleHash: Buffer.from(delegatedPuzzle.puzzle_info.oracle_payment_puzzle_hash, 'hex'),
-      oracleFee: BigInt(delegatedPuzzle.puzzle_info.oracle_fee),
+      adminInnerPuzzleHash: delegatedPuzzle.puzzle_info.admin_inner_puzzle_hash ? Buffer.from(delegatedPuzzle.puzzle_info.admin_inner_puzzle_hash, 'hex') : undefined,
+      writerInnerPuzzleHash: delegatedPuzzle.puzzle_info.writer_inner_puzzle_hash ? Buffer.from(delegatedPuzzle.puzzle_info.writer_inner_puzzle_hash, 'hex') : undefined,
+      oraclePaymentPuzzleHash: delegatedPuzzle.puzzle_info.oracle_payment_puzzle_hash ? Buffer.from(delegatedPuzzle.puzzle_info.oracle_payment_puzzle_hash, 'hex') : undefined,
+      oracleFee: delegatedPuzzle.puzzle_info.oracle_fee ? BigInt(delegatedPuzzle.puzzle_info.oracle_fee) : undefined,
     }
   };
 }
