@@ -1,10 +1,10 @@
-import { addressToPuzzleHash, adminDelegatedPuzzleFromKey, oracleDelegatedPuzzle, puzzleHashToAddress, signCoinSpends, SpendBundle, writerDelegatedPuzzleFromKey } from "datalayer-driver";
+import { addressToPuzzleHash, adminDelegatedPuzzleFromKey, getCoinId, oracleDelegatedPuzzle, puzzleHashToAddress, signCoinSpends, SpendBundle, writerDelegatedPuzzleFromKey } from "datalayer-driver";
 import { formatCoin, formatSuccessResponse } from "./format";
 import { getPeer, getPrivateSyntheticKey, getPublicSyntheticKey, getServerPuzzleHash, MIN_HEIGHT, NETWORK_AGG_SIG_DATA, NETWORK_PREFIX } from "./utils";
 import express, { Request, Response } from 'express';
 import bodyParser from "body-parser";
 import cors from 'cors';
-import { parseCoinSpends } from "./parse";
+import { parseCoin, parseCoinSpends } from "./parse";
 
 const app = express();
 const port = 3030;
@@ -81,6 +81,20 @@ app.post('/sing_and_send', async (req: Request, res: Response) => {
   console.log({ err})
 
   res.json({ err });
+});
+
+app.post('/coin_confirmed', async (req: Request, res: Response) => {
+  let { coin } : {
+    coin: any,
+  } = req.body;
+  coin = parseCoin(coin);
+
+  const peer = await getPeer();
+  const confirmed = await peer.isCoinSpent(getCoinId(coin));
+
+  console.log({ confirmed})
+
+  res.json({ confirmed });
 });
 
 app.listen(port, () => {
