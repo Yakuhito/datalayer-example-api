@@ -173,7 +173,7 @@ app.post('/add-fee', async (req: Request, res: Response) => {
   } = req.body;
 
   const peer = await getPeer();
-  const resp = await peer.addFee(getPublicSyntheticKey(), MIN_HEIGHT, coin_ids.map((id) => Buffer.from(id, 'hex')), fee);
+  const resp = await peer.addFee(getPublicSyntheticKey(), MIN_HEIGHT, coin_ids.map((id) => Buffer.from(id, 'hex')), BigInt(fee));
 
   res.json({ coin_spends: resp.map(formatCoinSpend) });
 });
