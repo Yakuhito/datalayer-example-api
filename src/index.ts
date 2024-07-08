@@ -1,10 +1,10 @@
 import { addressToPuzzleHash, adminDelegatedPuzzleFromKey, getCoinId, oracleDelegatedPuzzle, puzzleHashToAddress, signCoinSpends, SpendBundle, writerDelegatedPuzzleFromKey } from "datalayer-driver";
-import { formatCoin, formatSuccessResponse } from "./format";
+import { formatCoin, formatDataStoreInfo, formatSuccessResponse } from "./format";
 import { getPeer, getPrivateSyntheticKey, getPublicSyntheticKey, getServerPuzzleHash, MIN_HEIGHT, NETWORK_AGG_SIG_DATA, NETWORK_PREFIX } from "./utils";
 import express, { Request, Response } from 'express';
 import bodyParser from "body-parser";
 import cors from 'cors';
-import { parseCoin, parseCoinSpends } from "./parse";
+import { parseCoin, parseCoinSpends, parseDataStoreInfo } from "./parse";
 
 const app = express();
 const port = 3030;
@@ -40,7 +40,6 @@ app.post('/mint', async (req: Request, res: Response) => {
   const feeBigInt = BigInt(fee);
   const oracleFeeBigInt = BigInt(oracle_fee);
 
-  const serverPh = getServerPuzzleHash();
   const serverKey = getPublicSyntheticKey();
 
   const peer = await getPeer();
@@ -54,7 +53,7 @@ app.post('/mint', async (req: Request, res: Response) => {
     [
       adminDelegatedPuzzleFromKey(serverKey),
       writerDelegatedPuzzleFromKey(serverKey),
-      oracleDelegatedPuzzle(serverPh, oracleFeeBigInt)
+      oracleDelegatedPuzzle(ownerPuzzleHash, oracleFeeBigInt)
     ],
     feeBigInt
   );
@@ -95,6 +94,18 @@ app.post('/coin_confirmed', async (req: Request, res: Response) => {
   console.log({ confirmed})
 
   res.json({ confirmed });
+});
+
+app.post('/sync', async (req: Request, res: Response) => {
+  let { info } : {
+    info: any,
+  } = req.body;
+  info = parseDataStoreInfo(info);
+
+  const peer = await getPeer();
+  const resp = await peer.syncStore(info, MIN_HEIGHT);
+
+  res.json({ info: formatDataStoreInfo(resp.latestInfo) });
 });
 
 app.listen(port, () => {

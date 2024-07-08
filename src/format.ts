@@ -1,4 +1,4 @@
-import { Coin, DataStoreMetadata, DelegatedPuzzle, Proof, SuccessResponse } from "datalayer-driver";
+import { Coin, DataStoreInfo, DataStoreMetadata, DelegatedPuzzle, Proof, SuccessResponse } from "datalayer-driver";
 
 export const formatCoin = (coin: Coin) => ({
   parent_coin_info: coin.parentCoinInfo.toString('hex'),
@@ -41,6 +41,17 @@ export const formatDelegatedPuzzle = (dp: DelegatedPuzzle): any => {
   }
 }
 
+export const formatDataStoreInfo = (info: DataStoreInfo): any => {
+  return {
+    coin: formatCoin(info.coin),
+    launcher_id: info.launcherId.toString('hex'),
+    proof: formatProof(info.proof),
+    metadata: formatMetadata(info.metadata),
+    owner_puzzle_hash: info.ownerPuzzleHash.toString('hex'),
+    delegated_puzzles: info.delegatedPuzzles.map(formatDelegatedPuzzle),
+  };
+}
+
 export const formatSuccessResponse = (response: SuccessResponse): any => {
   return {
     coin_spends: response.coinSpends.map((coinSpend) => ({
@@ -48,14 +59,7 @@ export const formatSuccessResponse = (response: SuccessResponse): any => {
       puzzle_reveal: coinSpend.puzzleReveal.toString('hex'),
       solution: coinSpend.solution.toString('hex'),
     })),
-    new_info: {
-      coin: formatCoin(response.newInfo.coin),
-      launcher_id: response.newInfo.launcherId.toString('hex'),
-      proof: formatProof(response.newInfo.proof),
-      metadata: formatMetadata(response.newInfo.metadata),
-      owner_puzzle_hash: response.newInfo.ownerPuzzleHash.toString('hex'),
-      delegated_puzzles: response.newInfo.delegatedPuzzles.map(formatDelegatedPuzzle),
-    },
+    new_info: formatDataStoreInfo(response.newInfo),
   };
 
 }
