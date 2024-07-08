@@ -1,10 +1,10 @@
-import { addressToPuzzleHash, adminDelegatedPuzzleFromKey, getCoinId, oracleDelegatedPuzzle, puzzleHashToAddress, signCoinSpends, SpendBundle, writerDelegatedPuzzleFromKey } from "datalayer-driver";
-import { formatCoin, formatDataStoreInfo, formatSuccessResponse } from "./format";
+import { addressToPuzzleHash, adminDelegatedPuzzleFromKey, getCoinId, meltStore, oracleDelegatedPuzzle, puzzleHashToAddress, signCoinSpends, SpendBundle, updateStoreMetadata, updateStoreOwnership, writerDelegatedPuzzleFromKey } from "datalayer-driver";
+import { formatCoin, formatCoinSpend, formatDataStoreInfo, formatSuccessResponse } from "./format";
 import { getPeer, getPrivateSyntheticKey, getPublicSyntheticKey, getServerPuzzleHash, MIN_HEIGHT, NETWORK_AGG_SIG_DATA, NETWORK_PREFIX } from "./utils";
 import express, { Request, Response } from 'express';
 import bodyParser from "body-parser";
 import cors from 'cors';
-import { parseCoin, parseCoinSpends, parseDataStoreInfo } from "./parse";
+import { parseCoin, parseCoinSpends, parseDataStoreInfo, parseDelegatedPuzzle } from "./parse";
 
 const app = express();
 const port = 3030;
@@ -106,6 +106,76 @@ app.post('/sync', async (req: Request, res: Response) => {
   const resp = await peer.syncStore(info, MIN_HEIGHT);
 
   res.json({ info: formatDataStoreInfo(resp.latestInfo) });
+});
+
+app.post('/update-ownership', async (req: Request, res: Response) => {
+  let { info, new_owner_puzzle_hash, new_delegated_puzzles, owner_public_key, admin_public_key } : {
+    info: any,
+    new_owner_puzzle_hash: string,
+    new_delegated_puzzles: any[],
+    owner_public_key?: string,
+    admin_public_key?: string
+  } = req.body;
+
+  const resp = await updateStoreOwnership(
+    parseDataStoreInfo(info),
+    Buffer.from(new_owner_puzzle_hash, 'hex'),
+    new_delegated_puzzles.map(parseDelegatedPuzzle),
+    owner_public_key ? Buffer.from(owner_public_key, 'hex') : undefined,
+    admin_public_key ? Buffer.from(admin_public_key, 'hex') : undefined,
+  );
+
+  res.json(formatSuccessResponse(resp));
+});
+
+app.post('/update-metadata', async (req: Request, res: Response) => {
+  let { info, new_root_hash, new_label, new_description, owner_public_key, admin_public_key, writer_public_key } : {
+    info: any,
+    new_root_hash: string,
+    new_label: string,
+    new_description: string,
+    owner_public_key?: string,
+    admin_public_key?: string,
+    writer_public_key?: string
+  } = req.body;
+
+  const resp = await updateStoreMetadata(
+    parseDataStoreInfo(info),
+    Buffer.from(new_root_hash, 'hex'),
+    new_label,
+    new_description,
+    owner_public_key ? Buffer.from(owner_public_key, 'hex') : undefined,
+    admin_public_key ? Buffer.from(admin_public_key, 'hex') : undefined,
+    writer_public_key ? Buffer.from(writer_public_key, 'hex') : undefined,
+  );
+
+  res.json(formatSuccessResponse(resp));
+});
+
+app.post('/melt', async (req: Request, res: Response) => {
+  let { info, owner_public_key } : {
+    info: any,
+    owner_public_key: string,
+  } = req.body;
+
+  const resp = await meltStore(
+    parseDataStoreInfo(info),
+    Buffer.from(owner_public_key, 'hex'),
+  );
+
+  res.json({ coin_spends: resp.map(formatCoinSpend) });
+});
+
+app.post('/add-fee', async (req: Request, res: Response) => {
+  let { coin_ids, fee } : {
+    coin_ids: string[],
+    fee: number
+  } = req.body;
+
+  const peer = await getPeer();
+  const resp = await peer.addFee(getPublicSyntheticKey(), MIN_HEIGHT, coin_ids.map((id) => Buffer.from(id, 'hex')), fee);
+
+  res.json({ coin_spends: resp.map(formatCoinSpend) });
 });
 
 app.listen(port, () => {
