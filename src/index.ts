@@ -36,7 +36,7 @@ app.post('/mint', async (req: Request, res: Response) => {
     oracle_fee: number,
   } = req.body;
 
-  const rootHash = Buffer.from(root_hash, 'hex');
+  const rootHash = Buffer.from(root_hash.replace('0x', ''), 'hex');
   const ownerPuzzleHash = addressToPuzzleHash(owner_address);
   const feeBigInt = BigInt(fee);
   const oracleFeeBigInt = BigInt(oracle_fee);
@@ -118,44 +118,45 @@ app.post('/update-ownership', async (req: Request, res: Response) => {
     admin_public_key?: string
   } = req.body;
 
-  const resp = await updateStoreOwnership(
+  const resp = updateStoreOwnership(
     parseDataStoreInfo(info),
-    Buffer.from(new_owner_puzzle_hash, 'hex'),
+    Buffer.from(new_owner_puzzle_hash.replace('0x', ''), 'hex'),
     new_delegated_puzzle_keys_and_types.map((info) => {
       if(info.type === 'admin') {
-        return adminDelegatedPuzzleFromKey(Buffer.from(info.key, 'hex'));
+        return adminDelegatedPuzzleFromKey(Buffer.from(info.key.replace('0x', ''), 'hex'));
       } else if(info.type === 'writer') {
-        return writerDelegatedPuzzleFromKey(Buffer.from(info.key, 'hex'));
+        return writerDelegatedPuzzleFromKey(Buffer.from(info.key.replace('0x', ''), 'hex'));
       }
 
-      return oracleDelegatedPuzzle(Buffer.from(info.puzzle_hash, 'hex'), BigInt(info.fee));
+      return oracleDelegatedPuzzle(Buffer.from(info.puzzle_hash.replace('0x', ''), 'hex'), BigInt(info.fee));
     }),
-    owner_public_key ? Buffer.from(owner_public_key, 'hex') : undefined,
-    admin_public_key ? Buffer.from(admin_public_key, 'hex') : undefined,
+    owner_public_key ? Buffer.from(owner_public_key.replace('0x', ''), 'hex') : null,
+    admin_public_key ? Buffer.from(admin_public_key.replace('0x', ''), 'hex') : null,
   );
 
   res.json(formatSuccessResponse(resp));
 });
 
 app.post('/update-metadata', async (req: Request, res: Response) => {
-  let { info, new_root_hash, new_label, new_description, owner_public_key, admin_public_key, writer_public_key } : {
+  let { info, new_root_hash, new_label, new_description} : {
     info: any,
     new_root_hash: string,
     new_label: string,
     new_description: string,
-    owner_public_key?: string,
-    admin_public_key?: string,
-    writer_public_key?: string
   } = req.body;
 
-  const resp = await updateStoreMetadata(
+  const owner_public_key = req.body.owner_public_key;
+  const admin_public_key = req.body.admin_public_key;
+  const writer_public_key = req.body.writer_public_key;
+
+  const resp = updateStoreMetadata(
     parseDataStoreInfo(info),
-    Buffer.from(new_root_hash, 'hex'),
+    Buffer.from(new_root_hash.replace('0x', ''), 'hex'),
     new_label,
     new_description,
-    owner_public_key ? Buffer.from(owner_public_key, 'hex') : undefined,
-    admin_public_key ? Buffer.from(admin_public_key, 'hex') : undefined,
-    writer_public_key ? Buffer.from(writer_public_key, 'hex') : undefined,
+    owner_public_key ? Buffer.from(owner_public_key.replace('0x', ''), 'hex') : null,
+    admin_public_key ? Buffer.from(admin_public_key.replace('0x', ''), 'hex') : null,
+    writer_public_key ? Buffer.from(writer_public_key.replace('0x', ''), 'hex') : null,
   );
 
   res.json(formatSuccessResponse(resp));
@@ -167,9 +168,9 @@ app.post('/melt', async (req: Request, res: Response) => {
     owner_public_key: string,
   } = req.body;
 
-  const resp = await meltStore(
+  const resp = meltStore(
     parseDataStoreInfo(info),
-    Buffer.from(owner_public_key, 'hex'),
+    Buffer.from(owner_public_key.replace('0x', ''), 'hex'),
   );
 
   res.json({ coin_spends: resp.map(formatCoinSpend) });
@@ -200,7 +201,7 @@ app.post('/add-fee', async (req: Request, res: Response) => {
   } = req.body;
 
   const peer = await getPeer();
-  const resp = await peer.addFee(getPublicSyntheticKey(), MIN_HEIGHT, coin_ids.map((id) => Buffer.from(id, 'hex')), BigInt(fee));
+  const resp = await peer.addFee(getPublicSyntheticKey(), MIN_HEIGHT, coin_ids.map((id) => Buffer.from(id.replace('0x', ''), 'hex')), BigInt(fee));
 
   res.json({ coin_spends: resp.map(formatCoinSpend) });
 });
