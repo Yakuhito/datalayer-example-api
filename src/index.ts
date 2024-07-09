@@ -63,9 +63,9 @@ app.post('/mint', async (req: Request, res: Response) => {
 });
 
 app.post('/sing_and_send', async (req: Request, res: Response) => {
-  const { coin_spends, sig } : {
+  const { coin_spends, signature } : {
     coin_spends: any[],
-    sig?: string,
+    signature?: string,
   } = req.body;
   const coinSpends = parseCoinSpends(coin_spends);
 
@@ -74,7 +74,7 @@ app.post('/sing_and_send', async (req: Request, res: Response) => {
   const peer = await getPeer();
   const err = await peer.broadcastSpend(
     coinSpends,
-    sig ? [mySig, Buffer.from(sig.replace('0x', ''), 'hex')] : [mySig]
+    signature ? [mySig, Buffer.from(signature.replace('0x', ''), 'hex')] : [mySig]
   );
 
   console.log({ err})
