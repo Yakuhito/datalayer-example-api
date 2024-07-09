@@ -24,7 +24,7 @@ export function parseProof(proof: any): Proof {
       lineageProof: {
         parentParentCoinId: Buffer.from(proof.parent_parent_coin_id.replace('0x', ''), 'hex'),
         parentInnerPuzzleHash: Buffer.from(proof.parent_inner_puzzle_hash.replace('0x', ''), 'hex'),
-        parentAmount: BigInt(proof.parent_amount),
+        parentAmount: BigInt(proof?.parent_amount ?? proof.patent_amount), // typo in prev commits
       }
     }
   } else {

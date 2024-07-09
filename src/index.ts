@@ -195,13 +195,15 @@ app.post('/oracle', async (req: Request, res: Response) => {
 });
 
 app.post('/add-fee', async (req: Request, res: Response) => {
-  let { coin_ids, fee } : {
-    coin_ids: string[],
+  let { coins, fee } : {
+    coins: any[],
     fee: number
   } = req.body;
 
+  const coin_ids = coins.map(parseCoin).map((coin) => getCoinId(coin));
+
   const peer = await getPeer();
-  const resp = await peer.addFee(getPublicSyntheticKey(), MIN_HEIGHT, coin_ids.map((id) => Buffer.from(id.replace('0x', ''), 'hex')), BigInt(fee));
+  const resp = await peer.addFee(getPublicSyntheticKey(), MIN_HEIGHT, coin_ids, BigInt(fee));
 
   res.json({ coin_spends: resp.map(formatCoinSpend) });
 });

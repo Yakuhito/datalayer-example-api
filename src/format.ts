@@ -23,7 +23,7 @@ export const formatProof = (proof: Proof): any => {
   return {
     parent_parent_coin_id: '0x' + proof.lineageProof!.parentParentCoinId.toString('hex'),
     parent_inner_puzzle_hash: '0x' +  proof.lineageProof!.parentInnerPuzzleHash.toString('hex'),
-    patent_amount: parseInt(proof.lineageProof!.parentAmount.toString()),
+    parent_amount: parseInt(proof.lineageProof!.parentAmount.toString()),
   };
 }
 
