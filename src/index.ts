@@ -1,4 +1,4 @@
-import { addressToPuzzleHash, adminDelegatedPuzzleFromKey, getCoinId, meltStore, oracleDelegatedPuzzle, puzzleHashToAddress, signCoinSpends, SpendBundle, updateStoreMetadata, updateStoreOwnership, writerDelegatedPuzzleFromKey } from "datalayer-driver";
+import { addressToPuzzleHash, adminDelegatedPuzzleFromKey, getCoinId, meltStore, oracleDelegatedPuzzle, puzzleHashToAddress, signCoinSpends, updateStoreMetadata, updateStoreOwnership, writerDelegatedPuzzleFromKey } from "datalayer-driver";
 import { formatCoin, formatCoinSpend, formatDataStoreInfo, formatSuccessResponse } from "./format";
 import { getPeer, getPrivateSyntheticKey, getPublicSyntheticKey, getServerPuzzleHash, MIN_HEIGHT, NETWORK_AGG_SIG_DATA, NETWORK_PREFIX } from "./utils";
 import express, { Request, Response } from 'express';
@@ -63,20 +63,19 @@ app.post('/mint', async (req: Request, res: Response) => {
 });
 
 app.post('/sing_and_send', async (req: Request, res: Response) => {
-  const { coin_spends } : {
+  const { coin_spends, sig } : {
     coin_spends: any[],
+    sig?: string,
   } = req.body;
   const coinSpends = parseCoinSpends(coin_spends);
 
-  const sig = signCoinSpends(coinSpends, [getPrivateSyntheticKey()], NETWORK_AGG_SIG_DATA);
-
-  const spend_bundle: SpendBundle = {
-    coinSpends: coinSpends,
-    aggregatedSignature: sig,
-  };
+  const mySig = signCoinSpends(coinSpends, [getPrivateSyntheticKey()], NETWORK_AGG_SIG_DATA);
 
   const peer = await getPeer();
-  const err = await peer.broadcastSpendBundle(spend_bundle);
+  const err = await peer.broadcastSpend(
+    coinSpends,
+    sig ? [mySig, Buffer.from(sig.replace('0x', ''), 'hex')] : [mySig]
+  );
 
   console.log({ err})
 
@@ -187,7 +186,7 @@ app.post('/oracle', async (req: Request, res: Response) => {
   const resp = await peer.oracleSpend(
     getPublicSyntheticKey(),
     MIN_HEIGHT,
-    info,
+    parseDataStoreInfo(info),
     BigInt(fee)
   )
 
