@@ -1,4 +1,4 @@
-import { Coin, CoinSpend, DataStoreInfo, DataStoreMetadata, DelegatedPuzzle, Proof } from "datalayer-driver"
+import { Coin, CoinSpend, DataStoreInfo, DataStoreMetadata, DelegatedPuzzle, DelegatedPuzzleInfo, Proof } from "datalayer-driver"
 
 export function parseCoin(coin: any): Coin {
   return {
@@ -45,15 +45,19 @@ export function parseDataStoreMetadata(metadata: any): DataStoreMetadata {
   };
 }
 
+export function parseDelegatedPuzzleInfo(puzzleInfo: any): DelegatedPuzzleInfo {
+  return {
+    adminInnerPuzzleHash: puzzleInfo.admin_inner_puzzle_hash ? Buffer.from(puzzleInfo.admin_inner_puzzle_hash.replace('0x', ''), 'hex') : undefined,
+    writerInnerPuzzleHash: puzzleInfo.writer_inner_puzzle_hash ? Buffer.from(puzzleInfo.writer_inner_puzzle_hash.replace('0x', ''), 'hex') : undefined,
+    oraclePaymentPuzzleHash: puzzleInfo.oracle_payment_puzzle_hash ? Buffer.from(puzzleInfo.oracle_payment_puzzle_hash.replace('0x', ''), 'hex') : undefined,
+    oracleFee: puzzleInfo.oracle_fee ? BigInt(puzzleInfo.oracle_fee) : undefined,
+  };
+}
+
 export function parseDelegatedPuzzle(delegatedPuzzle: any): DelegatedPuzzle {
   return {
     puzzleHash: Buffer.from(delegatedPuzzle.puzzle_hash.replace('0x', ''), 'hex'),
-    puzzleInfo: {
-      adminInnerPuzzleHash: delegatedPuzzle.puzzle_info.admin_inner_puzzle_hash ? Buffer.from(delegatedPuzzle.puzzle_info.admin_inner_puzzle_hash.replace('0x', ''), 'hex') : undefined,
-      writerInnerPuzzleHash: delegatedPuzzle.puzzle_info.writer_inner_puzzle_hash ? Buffer.from(delegatedPuzzle.puzzle_info.writer_inner_puzzle_hash.replace('0x', ''), 'hex') : undefined,
-      oraclePaymentPuzzleHash: delegatedPuzzle.puzzle_info.oracle_payment_puzzle_hash ? Buffer.from(delegatedPuzzle.puzzle_info.oracle_payment_puzzle_hash.replace('0x', ''), 'hex') : undefined,
-      oracleFee: delegatedPuzzle.puzzle_info.oracle_fee ? BigInt(delegatedPuzzle.puzzle_info.oracle_fee) : undefined,
-    }
+    puzzleInfo: parseDelegatedPuzzleInfo(delegatedPuzzle.puzzle_info),
   };
 }
 

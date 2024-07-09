@@ -4,7 +4,7 @@ import { getPeer, getPrivateSyntheticKey, getPublicSyntheticKey, getServerPuzzle
 import express, { Request, Response } from 'express';
 import bodyParser from "body-parser";
 import cors from 'cors';
-import { parseCoin, parseCoinSpends, parseDataStoreInfo, parseDelegatedPuzzle } from "./parse";
+import { parseCoin, parseCoinSpends, parseDataStoreInfo, parseDelegatedPuzzle, parseDelegatedPuzzleInfo } from "./parse";
 
 const app = express();
 const port = 3030;
@@ -110,10 +110,10 @@ app.post('/sync', async (req: Request, res: Response) => {
 });
 
 app.post('/update-ownership', async (req: Request, res: Response) => {
-  let { info, new_owner_puzzle_hash, new_delegated_puzzles, owner_public_key, admin_public_key } : {
+  let { info, new_owner_puzzle_hash, new_delegated_puzzle_keys_and_types, owner_public_key, admin_public_key } : {
     info: any,
     new_owner_puzzle_hash: string,
-    new_delegated_puzzles: any[],
+    new_delegated_puzzle_keys_and_types: any[],
     owner_public_key?: string,
     admin_public_key?: string
   } = req.body;
@@ -121,7 +121,15 @@ app.post('/update-ownership', async (req: Request, res: Response) => {
   const resp = await updateStoreOwnership(
     parseDataStoreInfo(info),
     Buffer.from(new_owner_puzzle_hash, 'hex'),
-    new_delegated_puzzles.map(parseDelegatedPuzzle),
+    new_delegated_puzzle_keys_and_types.map((info) => {
+      if(info.type === 'admin') {
+        return adminDelegatedPuzzleFromKey(Buffer.from(info.key, 'hex'));
+      } else if(info.type === 'writer') {
+        return writerDelegatedPuzzleFromKey(Buffer.from(info.key, 'hex'));
+      }
+
+      return oracleDelegatedPuzzle(Buffer.from(info.puzzle_hash, 'hex'), BigInt(info.fee));
+    }),
     owner_public_key ? Buffer.from(owner_public_key, 'hex') : undefined,
     admin_public_key ? Buffer.from(admin_public_key, 'hex') : undefined,
   );
