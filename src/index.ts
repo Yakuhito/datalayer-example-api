@@ -1,6 +1,6 @@
-import { addressToPuzzleHash, adminDelegatedPuzzleFromKey, getCoinId, meltStore, oracleDelegatedPuzzle, puzzleHashToAddress, signCoinSpends, updateStoreMetadata, updateStoreOwnership, writerDelegatedPuzzleFromKey } from "datalayer-driver";
+import { addFee, addressToPuzzleHash, adminDelegatedPuzzleFromKey, getCoinId, meltStore, mintStore, oracleDelegatedPuzzle, oracleSpend, puzzleHashToAddress, selectCoins, signCoinSpends, updateStoreMetadata, updateStoreOwnership, writerDelegatedPuzzleFromKey } from "datalayer-driver";
 import { formatCoin, formatCoinSpend, formatDataStoreInfo, formatSuccessResponse } from "./format";
-import { getPeer, getPrivateSyntheticKey, getPublicSyntheticKey, getServerPuzzleHash, MIN_HEIGHT, NETWORK_AGG_SIG_DATA, NETWORK_PREFIX } from "./utils";
+import { getPeer, getPrivateSyntheticKey, getPublicSyntheticKey, getServerPuzzleHash, MIN_HEIGHT, MIN_HEIGHT_HEADER_HASH, NETWORK_AGG_SIG_DATA, NETWORK_PREFIX } from "./utils";
 import express, { Request, Response } from 'express';
 import bodyParser from "body-parser";
 import cors from 'cors';
@@ -17,12 +17,14 @@ app.get('/info', async (req: Request, res: any) => {
   const address = puzzleHashToAddress(ph, NETWORK_PREFIX);
 
   const peer = await getPeer();
-  const coins = await peer.getCoins(ph, MIN_HEIGHT);
+  const coinsResp = await peer.getAllUnspentCoins(ph, MIN_HEIGHT, MIN_HEIGHT_HEADER_HASH);
 
   res.json({
     address,
     pk: getPublicSyntheticKey().toString('hex'),
-    coins: coins.map(formatCoin),
+    last_synced_block_height: coinsResp.lastHeight,
+    last_synced_block_header_hash: coinsResp.lastHeaderHash.toString('hex'),
+    coins: coinsResp.coins.map(formatCoin),
   })
 });
 
@@ -44,9 +46,15 @@ app.post('/mint', async (req: Request, res: Response) => {
   const serverKey = getPublicSyntheticKey();
 
   const peer = await getPeer();
-  const successResponse = await peer.mintStore(
+
+  // select coins
+  const ph = getServerPuzzleHash();
+  const coinsResp = await peer.getAllUnspentCoins(ph, MIN_HEIGHT, MIN_HEIGHT_HEADER_HASH);
+  const coins = selectCoins(coinsResp.coins, feeBigInt + BigInt(1));
+
+  const successResponse = await mintStore(
     getPublicSyntheticKey(),
-    MIN_HEIGHT,
+    coins,
     rootHash,
     label,
     description,
@@ -89,7 +97,7 @@ app.post('/coin_confirmed', async (req: Request, res: Response) => {
   coin = parseCoin(coin);
 
   const peer = await getPeer();
-  const confirmed = await peer.isCoinSpent(getCoinId(coin));
+  const confirmed = await peer.isCoinSpent(getCoinId(coin), MIN_HEIGHT, MIN_HEIGHT_HEADER_HASH);
 
   console.log({ confirmed})
 
@@ -103,7 +111,7 @@ app.post('/sync', async (req: Request, res: Response) => {
   info = parseDataStoreInfo(info);
 
   const peer = await getPeer();
-  const resp = await peer.syncStore(info, MIN_HEIGHT);
+  const resp = await peer.syncStore(info, MIN_HEIGHT, MIN_HEIGHT_HEADER_HASH);
 
   res.json({ info: formatDataStoreInfo(resp.latestInfo) });
 });
@@ -183,9 +191,15 @@ app.post('/oracle', async (req: Request, res: Response) => {
   } = req.body;
 
   const peer = await getPeer();
-  const resp = await peer.oracleSpend(
+
+  // select coins
+  const ph = getServerPuzzleHash();
+  const coinsResp = await peer.getAllUnspentCoins(ph, MIN_HEIGHT, MIN_HEIGHT_HEADER_HASH);
+  const coins = selectCoins(coinsResp.coins, BigInt(fee));
+
+  const resp = await oracleSpend(
     getPublicSyntheticKey(),
-    MIN_HEIGHT,
+    coins,
     parseDataStoreInfo(info),
     BigInt(fee)
   )
@@ -202,7 +216,13 @@ app.post('/add-fee', async (req: Request, res: Response) => {
   const coin_ids = coins.map(parseCoin).map((coin) => getCoinId(coin));
 
   const peer = await getPeer();
-  const resp = await peer.addFee(getPublicSyntheticKey(), MIN_HEIGHT, coin_ids, BigInt(fee));
+
+  // select coins
+  const ph = getServerPuzzleHash();
+  const coinsResp = await peer.getAllUnspentCoins(ph, MIN_HEIGHT, MIN_HEIGHT_HEADER_HASH);
+  const selectedCoins = selectCoins(coinsResp.coins, BigInt(fee));
+
+  const resp = await addFee(getPublicSyntheticKey(), selectedCoins, coin_ids, BigInt(fee));
 
   res.json({ coin_spends: resp.map(formatCoinSpend) });
 });
