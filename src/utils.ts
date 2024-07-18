@@ -9,9 +9,14 @@ export const MIN_HEIGHT = parseInt(process.env.MIN_HEIGHT || '1068656');
 export const MIN_HEIGHT_HEADER_HASH = Buffer.from(process.env.MIN_HEIGHT_HEADER_HASH || '8cd77da3fb583dae6c6a5ec2f2c814330924aecd10cc367779e827bc65e2737c', 'hex');
 export const NETWORK_AGG_SIG_DATA = Buffer.from(process.env.NETWORK_AGG_SIG_DATA || '37a90eb5185a9c4439a91ddc98bbadce7b4feba060d50116a067de66bf236615', 'hex');
 
-// todo: persist peer; wallet logic
+let peer: Peer | null = null;
+
 export const getPeer = async (): Promise<Peer> => {
-  return Peer.new('127.0.0.1:58444', 'testnet11', CHIA_CRT, CHIA_KEY);
+  if(peer === null) {
+    peer = await Peer.new('127.0.0.1:58444', 'testnet11', CHIA_CRT, CHIA_KEY)  
+  }
+
+  return peer!;
 };
 
 export const getPublicSyntheticKey = (): Buffer => {
