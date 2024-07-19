@@ -13,11 +13,13 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.use((req: Request, res: Response, next) => {
-  const secret = req.header('X-Secret');
-  if (!secret || secret !== SECRET_TOKEN) {
-    return res.status(403).json({ error: 'Forbidden: Missing X-Secret header' });
+  if (req.method !== 'OPTIONS') {
+    const secret = req.header('X-Secret');
+    if (!secret || secret !== SECRET_TOKEN) {
+      return res.status(403).json({ error: 'Forbidden: Missing X-Secret header' });
+    }
+    next(); 
   }
-  next();
 });
 
 
