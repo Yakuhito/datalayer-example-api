@@ -1,6 +1,6 @@
 import { addFee, addressToPuzzleHash, adminDelegatedPuzzleFromKey, getCoinId, meltStore, mintStore, oracleDelegatedPuzzle, oracleSpend, puzzleHashToAddress, selectCoins, signCoinSpends, updateStoreMetadata, updateStoreOwnership, writerDelegatedPuzzleFromKey } from "datalayer-driver";
 import { formatCoin, formatCoinSpend, formatDataStoreInfo, formatSuccessResponse } from "./format";
-import { getPeer, getPrivateSyntheticKey, getPublicSyntheticKey, getServerPuzzleHash, MIN_HEIGHT, MIN_HEIGHT_HEADER_HASH, NETWORK_AGG_SIG_DATA, NETWORK_PREFIX } from "./utils";
+import { getPeer, getPrivateSyntheticKey, getPublicSyntheticKey, getServerPuzzleHash, MIN_HEIGHT, MIN_HEIGHT_HEADER_HASH, NETWORK_AGG_SIG_DATA, NETWORK_PREFIX, SECRET_TOKEN } from "./utils";
 import express, { Request, Response } from 'express';
 import bodyParser from "body-parser";
 import cors from 'cors';
@@ -11,6 +11,15 @@ const port = 3030;
 
 app.use(cors());
 app.use(bodyParser.json());
+
+app.use((req: Request, res: Response, next) => {
+  const secret = req.header('X-Secret');
+  if (!secret || secret !== SECRET_TOKEN) {
+    return res.status(403).json({ error: 'Forbidden: Missing X-Secret header' });
+  }
+  next();
+});
+
 
 app.get('/info', async (req: Request, res: any) => {
   const ph = getServerPuzzleHash();
@@ -70,7 +79,7 @@ app.post('/mint', async (req: Request, res: Response) => {
   res.json(formatSuccessResponse(successResponse));
 });
 
-app.post('/sing_and_send', async (req: Request, res: Response) => {
+app.post('/sing-and-send', async (req: Request, res: Response) => {
   const { coin_spends, signature } : {
     coin_spends: any[],
     signature?: string,
@@ -90,7 +99,7 @@ app.post('/sing_and_send', async (req: Request, res: Response) => {
   res.json({ err });
 });
 
-app.post('/coin_confirmed', async (req: Request, res: Response) => {
+app.post('/coin-confirmed', async (req: Request, res: Response) => {
   let { coin } : {
     coin: any,
   } = req.body;
