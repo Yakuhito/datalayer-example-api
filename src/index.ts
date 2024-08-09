@@ -69,6 +69,7 @@ app.post('/mint', async (req: Request, res: Response) => {
     rootHash,
     label,
     description,
+    null,
     ownerPuzzleHash,
     [
       adminDelegatedPuzzleFromKey(serverKey),
@@ -172,6 +173,7 @@ app.post('/update-metadata', async (req: Request, res: Response) => {
     Buffer.from(new_root_hash.replace('0x', ''), 'hex'),
     new_label,
     new_description,
+    null,
     owner_public_key ? Buffer.from(owner_public_key.replace('0x', ''), 'hex') : null,
     admin_public_key ? Buffer.from(admin_public_key.replace('0x', ''), 'hex') : null,
     writer_public_key ? Buffer.from(writer_public_key.replace('0x', ''), 'hex') : null,
