@@ -126,7 +126,7 @@ app.post('/sync', async (req: Request, res: Response) => {
   info = parseDataStoreInfo(info);
 
   const peer = await getPeer();
-  const resp = await peer.syncStore(info, MIN_HEIGHT, MIN_HEIGHT_HEADER_HASH);
+  const resp = await peer.syncStore(info, MIN_HEIGHT, MIN_HEIGHT_HEADER_HASH, false);
 
   res.json({ info: formatDataStoreInfo(resp.latestInfo) });
 });
