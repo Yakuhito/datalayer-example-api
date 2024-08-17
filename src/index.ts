@@ -171,6 +171,15 @@ app.post('/update-metadata', async (req: Request, res: Response) => {
   const admin_public_key = req.body.admin_public_key;
   const writer_public_key = req.body.writer_public_key;
 
+  // todo: debug
+  console.log("doing thing")
+  const peer = await getPeer();
+  console.log("getting estimate...")
+  const resp_yak = await peer.getFeeEstimate(BigInt(60));
+  console.log({ resp_yak })
+  console.log("Done")
+  // todo: debug
+
   const resp = updateStoreMetadata(
     parseDataStoreInfo(info),
     Buffer.from(new_root_hash.replace('0x', ''), 'hex'),
