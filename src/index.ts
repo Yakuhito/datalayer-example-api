@@ -30,11 +30,14 @@ app.get('/info', async (req: Request, res: any) => {
   const peer = await getPeer();
   const coinsResp = await peer.getAllUnspentCoins(ph, MIN_HEIGHT, MIN_HEIGHT_HEADER_HASH);
 
+  const peak = await peer.getPeak();
+
   res.json({
     address,
     pk: getPublicSyntheticKey().toString('hex'),
     last_synced_block_height: coinsResp.lastHeight,
     last_synced_block_header_hash: coinsResp.lastHeaderHash.toString('hex'),
+    peak: peak ?? "no peak yet",
     coins: coinsResp.coins.map(formatCoin),
   })
 });
