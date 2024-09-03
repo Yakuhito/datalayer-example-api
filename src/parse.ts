@@ -19,7 +19,7 @@ export function parseCoinSpends(coinSpends: any[]): CoinSpend[] {
 }
 
 export function parseProof(proof: any): Proof {
-  if (!proof.amount) {
+  if (proof.parent_inner_puzzle_hash) {
     return {
       lineageProof: {
         parentParentCoinInfo: Buffer.from(proof.parent_parent_coin_info.replace('0x', ''), 'hex'),
