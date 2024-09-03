@@ -92,7 +92,7 @@ app.post('/sing-and-send', async (req: Request, res: Response) => {
   } = req.body;
   const coinSpends = parseCoinSpends(coin_spends);
 
-  const mySig = signCoinSpends(coinSpends, [getPrivateSyntheticKey()], false);
+  const mySig = signCoinSpends(coinSpends, [getPrivateSyntheticKey()], true);
 
   const peer = await getPeer();
   const err = await peer.broadcastSpend(
