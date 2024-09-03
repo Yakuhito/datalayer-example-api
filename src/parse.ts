@@ -1,4 +1,4 @@
-import { Coin, CoinSpend, DataStoreInfo, DataStoreMetadata, DelegatedPuzzle, DelegatedPuzzleInfo, Proof } from "datalayer-driver"
+import { Coin, CoinSpend, DataStore, DataStoreMetadata, DelegatedPuzzle, Proof } from "datalayer-driver"
 
 export function parseCoin(coin: any): Coin {
   return {
@@ -22,7 +22,7 @@ export function parseProof(proof: any): Proof {
   if (!proof.amount) {
     return {
       lineageProof: {
-        parentParentCoinId: Buffer.from(proof.parent_parent_coin_id.replace('0x', ''), 'hex'),
+        parentParentCoinInfo: Buffer.from(proof.parent_parent_coin_info.replace('0x', ''), 'hex'),
         parentInnerPuzzleHash: Buffer.from(proof.parent_inner_puzzle_hash.replace('0x', ''), 'hex'),
         parentAmount: BigInt(proof?.parent_amount ?? proof.patent_amount), // typo in prev commits
       }
@@ -30,8 +30,8 @@ export function parseProof(proof: any): Proof {
   } else {
     return {
       eveProof: {
-        parentCoinInfo: Buffer.from(proof.parent_coin_info.replace('0x', ''), 'hex'),
-        amount: BigInt(proof.amount),
+        parentParentCoinInfo: Buffer.from(proof.parent_parent_coin_info.replace('0x', ''), 'hex'),
+        parentAmount: BigInt(proof.parent_amount),
       }
     }
   }
@@ -45,7 +45,7 @@ export function parseDataStoreMetadata(metadata: any): DataStoreMetadata {
   };
 }
 
-export function parseDelegatedPuzzleInfo(puzzleInfo: any): DelegatedPuzzleInfo {
+export function parseDelegatedPuzzle(puzzleInfo: any): DelegatedPuzzle {
   return {
     adminInnerPuzzleHash: puzzleInfo.admin_inner_puzzle_hash ? Buffer.from(puzzleInfo.admin_inner_puzzle_hash.replace('0x', ''), 'hex') : undefined,
     writerInnerPuzzleHash: puzzleInfo.writer_inner_puzzle_hash ? Buffer.from(puzzleInfo.writer_inner_puzzle_hash.replace('0x', ''), 'hex') : undefined,
@@ -54,20 +54,13 @@ export function parseDelegatedPuzzleInfo(puzzleInfo: any): DelegatedPuzzleInfo {
   };
 }
 
-export function parseDelegatedPuzzle(delegatedPuzzle: any): DelegatedPuzzle {
+export function parseDataStore(datastore: any): DataStore {
   return {
-    puzzleHash: Buffer.from(delegatedPuzzle.puzzle_hash.replace('0x', ''), 'hex'),
-    puzzleInfo: parseDelegatedPuzzleInfo(delegatedPuzzle.puzzle_info),
-  };
-}
-
-export function parseDataStoreInfo(info: any): DataStoreInfo {
-  return {
-    coin: parseCoin(info.coin),
-    launcherId: Buffer.from(info.launcher_id.replace('0x', ''), 'hex'),
-    proof: parseProof(info.proof),
-    metadata: parseDataStoreMetadata(info.metadata),
-    ownerPuzzleHash: Buffer.from(info.owner_puzzle_hash.replace('0x', ''), 'hex'),
-    delegatedPuzzles: info.delegated_puzzles.map(parseDelegatedPuzzle),
+    coin: parseCoin(datastore.coin),
+    launcherId: Buffer.from(datastore.launcher_id.replace('0x', ''), 'hex'),
+    proof: parseProof(datastore.proof),
+    metadata: parseDataStoreMetadata(datastore.metadata),
+    ownerPuzzleHash: Buffer.from(datastore.owner_puzzle_hash.replace('0x', ''), 'hex'),
+    delegatedPuzzles: datastore.delegated_puzzles.map(parseDelegatedPuzzle),
   };
 }

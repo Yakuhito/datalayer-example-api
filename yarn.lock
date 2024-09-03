@@ -285,41 +285,41 @@ create-require@^1.1.0:
   resolved "https://registry.npmjs.org/create-require/-/create-require-1.1.1.tgz"
   integrity sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==
 
-datalayer-driver-darwin-arm64@0.1.15:
-  version "0.1.15"
-  resolved "https://registry.yarnpkg.com/datalayer-driver-darwin-arm64/-/datalayer-driver-darwin-arm64-0.1.15.tgz#d40b825df5148fd707f7de5b64f8980d752a87d8"
-  integrity sha512-tKGrovYmtcwmxX1dHxebNNxsdGXcSHEI6Kri55PkQLDDPz7tfbmCxm1Mxo2mHNiTu1SMyd6sEB5rkaawaK+sxQ==
+datalayer-driver-darwin-arm64@0.1.19:
+  version "0.1.19"
+  resolved "https://registry.yarnpkg.com/datalayer-driver-darwin-arm64/-/datalayer-driver-darwin-arm64-0.1.19.tgz#f4f24378db3c700af5c892c84347d6184d5dd9a6"
+  integrity sha512-+JoIawktv6NJUEFren+N37xTja8APUEHiTkAhzJ+yKd4oi8hxD+0FxlxgYh2FOavY1T68h/U/iJRw6cUhzAyBQ==
 
-datalayer-driver-darwin-x64@0.1.15:
-  version "0.1.15"
-  resolved "https://registry.yarnpkg.com/datalayer-driver-darwin-x64/-/datalayer-driver-darwin-x64-0.1.15.tgz#9ce37f4acb1fd8d66ded0b7a5e85367bc2c672d3"
-  integrity sha512-YVg/JUVihb2ay87zrCrGBLutJyU8lUMOB3xxIdUWlXiJZpIZktPRgw3AXbRWlJK+MeO1DCl99VJimLdORLDavA==
+datalayer-driver-darwin-x64@0.1.19:
+  version "0.1.19"
+  resolved "https://registry.yarnpkg.com/datalayer-driver-darwin-x64/-/datalayer-driver-darwin-x64-0.1.19.tgz#85a5ce703209bd98334afad0cf00fc3a0864ae0e"
+  integrity sha512-L2kdyA2bRAEY3vH0i89yaYmWTsLb0QQRV8RhCDRFSh4nY+143tE4ykqv780ZTPvUQexjCVbU/A6KlvDA/hreaw==
 
-datalayer-driver-linux-arm64-gnu@0.1.15:
-  version "0.1.15"
-  resolved "https://registry.yarnpkg.com/datalayer-driver-linux-arm64-gnu/-/datalayer-driver-linux-arm64-gnu-0.1.15.tgz#2381ad22be559abb537318c666317a57c9fbd0fe"
-  integrity sha512-Jqey30OQIYL0iFN5CyJ7OhfoXyPEzvmv74i+472Pq3IOa4pFRkh3lkrG4GiDO2QVmOVqM+hhby0UkxGb2xIQDQ==
+datalayer-driver-linux-arm64-gnu@0.1.19:
+  version "0.1.19"
+  resolved "https://registry.yarnpkg.com/datalayer-driver-linux-arm64-gnu/-/datalayer-driver-linux-arm64-gnu-0.1.19.tgz#91e3f668eab631e2f142200b24b15d90d27f1807"
+  integrity sha512-c8rkCjfAI4JXJ6QW7xzc/FJKR35g3yzWFEMNj/iOHePu27Jvednmnowrr1a0lXJrxC9XeqEuqVEbcFVNj/xDCA==
 
-datalayer-driver-linux-x64-gnu@0.1.15:
-  version "0.1.15"
-  resolved "https://registry.yarnpkg.com/datalayer-driver-linux-x64-gnu/-/datalayer-driver-linux-x64-gnu-0.1.15.tgz#970ca802c4684a70f13f78cfca559b3970b53556"
-  integrity sha512-iqeilWh1Tk3WutwKm5ndYkm5YF59iBd0dvL7OwrpitQkpKew4mxnpo7oXFeTZ+GTWtsv/LesFqeJaCT1EJR76Q==
+datalayer-driver-linux-x64-gnu@0.1.19:
+  version "0.1.19"
+  resolved "https://registry.yarnpkg.com/datalayer-driver-linux-x64-gnu/-/datalayer-driver-linux-x64-gnu-0.1.19.tgz#fb0c0a7ed2d9774d7e6c7fea781a97827ff9dd1c"
+  integrity sha512-F7kS+4Rke18IyWapqEt9Uuz361leTbOWoKhiJ/2uYWpZxpkbwPhmmotz/bG3hTQvg2B5SvAOsv0lwzk0aaHVhA==
 
-datalayer-driver-win32-x64-msvc@0.1.15:
-  version "0.1.15"
-  resolved "https://registry.yarnpkg.com/datalayer-driver-win32-x64-msvc/-/datalayer-driver-win32-x64-msvc-0.1.15.tgz#76feda36c2933d25f35377a0f68b8e6edffc11f0"
-  integrity sha512-PeQlMACebudN8HY6aG171ccUQbHYrTtP/FaAAsgzD2NkaGVd+zCDrqWL/W0/9rVm1R9HSHfSeXf12bfyn0PL/Q==
+datalayer-driver-win32-x64-msvc@0.1.19:
+  version "0.1.19"
+  resolved "https://registry.yarnpkg.com/datalayer-driver-win32-x64-msvc/-/datalayer-driver-win32-x64-msvc-0.1.19.tgz#5fab610314457294ea133b3d7fbd258165434d50"
+  integrity sha512-gVPjMxDYueSXGbFrBfNNhRmqm1bvt1IIdbCFyG61Y9YAAgpXJVbrhlktiAuV0c0WxlNPRG7xsmNg9t7K2ZnASQ==
 
-datalayer-driver@^0.1.15:
-  version "0.1.15"
-  resolved "https://registry.yarnpkg.com/datalayer-driver/-/datalayer-driver-0.1.15.tgz#8f44bfa668b45ff603fcdc444859a38dc90c3d61"
-  integrity sha512-PgFY8hxwG2+jdA2R3fxS/Mcg7HdP4sWWwivLtF3fCUvzINHTJR68VCmt7ly6DLX1B7GCv2PQnCbmlfymfG6R6Q==
+datalayer-driver@^0.1.19:
+  version "0.1.19"
+  resolved "https://registry.yarnpkg.com/datalayer-driver/-/datalayer-driver-0.1.19.tgz#2fa27c5968c6bd9348a72eb1cc555d77ae2da60f"
+  integrity sha512-m1ZZTOiH0ID5OfnkpNfFlPmCzOQ8vooVBvjSTOB5AUQlWoFoLph8dM8bR5jI4qXpqc6fDEuEUifhWGH14+f7cA==
   optionalDependencies:
-    datalayer-driver-darwin-arm64 "0.1.15"
-    datalayer-driver-darwin-x64 "0.1.15"
-    datalayer-driver-linux-arm64-gnu "0.1.15"
-    datalayer-driver-linux-x64-gnu "0.1.15"
-    datalayer-driver-win32-x64-msvc "0.1.15"
+    datalayer-driver-darwin-arm64 "0.1.19"
+    datalayer-driver-darwin-x64 "0.1.19"
+    datalayer-driver-linux-arm64-gnu "0.1.19"
+    datalayer-driver-linux-x64-gnu "0.1.19"
+    datalayer-driver-win32-x64-msvc "0.1.19"
 
 debug@2.6.9:
   version "2.6.9"

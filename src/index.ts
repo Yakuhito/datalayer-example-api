@@ -1,10 +1,10 @@
 import { addFee, addressToPuzzleHash, adminDelegatedPuzzleFromKey, getCoinId, meltStore, mintStore, oracleDelegatedPuzzle, oracleSpend, puzzleHashToAddress, selectCoins, signCoinSpends, updateStoreMetadata, updateStoreOwnership, writerDelegatedPuzzleFromKey } from "datalayer-driver";
-import { formatCoin, formatCoinSpend, formatDataStoreInfo, formatSuccessResponse } from "./format";
-import { getPeer, getPrivateSyntheticKey, getPublicSyntheticKey, getServerPuzzleHash, MIN_HEIGHT, MIN_HEIGHT_HEADER_HASH, NETWORK_AGG_SIG_DATA, NETWORK_PREFIX, SECRET_TOKEN } from "./utils";
+import { formatCoin, formatCoinSpend, formatDataStore, formatSuccessResponse } from "./format";
+import { getPeer, getPrivateSyntheticKey, getPublicSyntheticKey, getServerPuzzleHash, MIN_HEIGHT, MIN_HEIGHT_HEADER_HASH, NETWORK_PREFIX, SECRET_TOKEN } from "./utils";
 import express, { Request, Response } from 'express';
 import bodyParser from "body-parser";
 import cors from 'cors';
-import { parseCoin, parseCoinSpends, parseDataStoreInfo, parseDelegatedPuzzle, parseDelegatedPuzzleInfo } from "./parse";
+import { parseCoin, parseCoinSpends, parseDataStore, parseDelegatedPuzzle } from "./parse";
 
 const app = express();
 const port = 3030;
@@ -92,7 +92,7 @@ app.post('/sing-and-send', async (req: Request, res: Response) => {
   } = req.body;
   const coinSpends = parseCoinSpends(coin_spends);
 
-  const mySig = signCoinSpends(coinSpends, [getPrivateSyntheticKey()], NETWORK_AGG_SIG_DATA);
+  const mySig = signCoinSpends(coinSpends, [getPrivateSyntheticKey()], false);
 
   const peer = await getPeer();
   const err = await peer.broadcastSpend(
@@ -123,12 +123,12 @@ app.post('/sync', async (req: Request, res: Response) => {
   let { info } : {
     info: any,
   } = req.body;
-  info = parseDataStoreInfo(info);
+  info = parseDataStore(info);
 
   const peer = await getPeer();
   const resp = await peer.syncStore(info, MIN_HEIGHT, MIN_HEIGHT_HEADER_HASH, false);
 
-  res.json({ info: formatDataStoreInfo(resp.latestInfo) });
+  res.json({ info: formatDataStore(resp.latestStore) });
 });
 
 app.post('/update-ownership', async (req: Request, res: Response) => {
@@ -141,7 +141,7 @@ app.post('/update-ownership', async (req: Request, res: Response) => {
   } = req.body;
 
   const resp = updateStoreOwnership(
-    parseDataStoreInfo(info),
+    parseDataStore(info),
     Buffer.from(new_owner_puzzle_hash.replace('0x', ''), 'hex'),
     new_delegated_puzzle_keys_and_types.map((info) => {
       if(info.type === 'admin') {
@@ -181,7 +181,7 @@ app.post('/update-metadata', async (req: Request, res: Response) => {
   // todo: debug
 
   const resp = updateStoreMetadata(
-    parseDataStoreInfo(info),
+    parseDataStore(info),
     Buffer.from(new_root_hash.replace('0x', ''), 'hex'),
     new_label,
     new_description,
@@ -201,7 +201,7 @@ app.post('/melt', async (req: Request, res: Response) => {
   } = req.body;
 
   const resp = meltStore(
-    parseDataStoreInfo(info),
+    parseDataStore(info),
     Buffer.from(owner_public_key.replace('0x', ''), 'hex'),
   );
 
@@ -225,7 +225,7 @@ app.post('/oracle', async (req: Request, res: Response) => {
   const resp = await oracleSpend(
     getPublicSyntheticKey(),
     coins,
-    parseDataStoreInfo(info),
+    parseDataStore(info),
     BigInt(fee)
   )
 

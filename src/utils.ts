@@ -14,7 +14,7 @@ let peer: Peer | null = null;
 
 export const getPeer = async (): Promise<Peer> => {
   if(peer === null) {
-    peer = await Peer.new('127.0.0.1:58444', 'testnet11', CHIA_CRT, CHIA_KEY)  
+    peer = await Peer.new('127.0.0.1:58444', true, CHIA_CRT, CHIA_KEY)  
   }
 
   return peer!;
